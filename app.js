@@ -20,69 +20,46 @@ var options = {
     cert : fs.readFileSync('../keys/cpserver.crt')
 }
 */
-/*
-var convertURL = function(longurl, callback) {
-    shorturl = shortDomain + sh.unique(longurl);
-    sendMessageSQS(longurl, shorturl);
-    callback(shorturl);
-}
 
-var getPublicIP = function(callback){
-    request({
-        url : ipUrl,
-        method : "GET"
-    }, function(error, response, body){
-        console.log("getting IP: " + body);
-        callback(body);
-    })
-}
-*/
-/*
-var connection = mysql.createConnection({
-    host : 'localhost',
-    user : 'root',
-    password : 'team6rocks',
-    database : 'bitly'
-});
-*/
-var login = JSON.parse(fs.readFileSync("config.json"));
+var login = JSON.parse(fs.readFileSync("../sqlconfig.json"));
 var connection = mysql.createConnection(login);
+connection.connect(function(err){
+    if(!err){
+        console.log("Database is connected ... \n");
+    } else {
+        console.log("Cannot connect to the database ... \n");
+    }
+});
 
-var updateDatabase = function(shorturl, longurl){
-    connection.connect(function(err){
-        if(!err){
-            console.log("Database is connected ... \n");
-        } else {
-            console.log("Cannot connect to the database ... \n");
-        }
-    });
-    
+var updateDatabase = function(shorturl, longurl, callback){
     var q = 'INSERT INTO URL (ShortUrl, LongUrl) VALUES ("'+shorturl+'","'+longurl+'")'; 
     connection.query(q, function(err, rows, fields) {
-        connection.end();
-        if (!err)
-            console.log('The response is: ', rows);
-        else
+        if (!err || err.code == "ER_DUP_ENTRY"){
+            console.log('Rows: ', rows);
+            console.log('Fields: ', fields);
+            callback("success");
+        }
+        else{
             console.log('Cannot perform query.') ;
+            console.log('Error: ' + err.code) ;
+            callback("fail");
+        }
     });
 }
 
-var readDataBase = function(shorturl){
-    connection.connect(function(err){
-        if(!err){
-            console.log("Database is connected ... \n");
-        } else {
-            console.log("Cannot connect to the database ... \n");
-        }
-    });
-
+var readDataBase = function(shorturl, callback){
     var q = 'SELECT longurl from URL where shorturl = ?';
     connection.query(q, shorturl ,function(err, rows, fields) {
-        connection.end();
-        if (!err)
+        if (!err && rows.length == 0){
+            console.log("shorturl not found.");
+            callback("not found",null);
+        }else if (!err){
             console.log('The response is: ', rows);
-        else
+            callback("success", rows[0].longurl);
+        }else{
             console.log('Cannot perform query.') ;
+            callback("fail", null);
+        }
     });
 
 }
@@ -90,12 +67,32 @@ var readDataBase = function(shorturl){
 var handle_post = function (req, res) {
     console.log("Post: ..." );
     console.log(req.body);
-    if (req.body.action == 'update')
-        updateDatabase(req.body.shorturl, req.body.longurl);
-    else if(req.body.action == 'read')
-        readDataBase(req.body.shorturl);
-    res.type('text/plain');
-    res.send("Got it!");
+    if (req.body.action == 'update'){
+        updateDatabase(req.body.shorturl, req.body.longurl, function(state){
+            if (state == "success"){
+                res.setHeader('Content-Type', 'application/json');
+                var data = {status:state};
+                res.json(data);
+            }else {
+                res.setHeader('Content-Type', 'application/json');
+                var data = {status:state};
+                res.json(data);
+            }
+        });
+    }
+    else if(req.body.action == 'read') {
+        readDataBase(req.body.shorturl, function(state, longurl){
+            if (state=="success"){
+                res.setHeader('Content-Type', 'application/json');
+                var data = {status:state, longurl: longurl};
+                res.json(data);
+            } else{
+                res.setHeader('Content-Type', 'application/json');
+                var data = {status:state};
+                res.json(data);
+            }
+        });
+    }
 }
 
 app.post("*", handle_post );
