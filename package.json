@@ -1,0 +1,17 @@
+{
+  "name": "sqlserver",
+  "description": "sqlserver",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "3.x",
+    "fs": "0.0.2",
+    "https": "^1.0.0",
+    "request": "^2.66.0",
+    "shorthash": "0.0.2",
+    "mysql": "~2.9.0"
+  }
+}
