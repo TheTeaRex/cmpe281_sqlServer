@@ -13,19 +13,19 @@ app.use(bodyParser.json());
 
 var ipUrl = "http://169.254.169.254/latest/meta-data/public-ipv4";
 
-/*
 // getting the keys
 var options = {
-    key : fs.readFileSync('../keys/cpserver.key'),
-    cert : fs.readFileSync('../keys/cpserver.crt')
+    key : fs.readFileSync('../keys/sqlserver.key'),
+    cert : fs.readFileSync('../keys/sqlserver.crt')
 }
-*/
 
 var login = JSON.parse(fs.readFileSync("../sqlconfig.json"));
 var connection = mysql.createConnection(login);
 connection.connect(function(err){
     if(!err){
         console.log("Database is connected ... \n");
+        //app.listen(process.env.PORT || 80);
+        https.createServer(options, app).listen(process.env.PORT || 443);
     } else {
         console.log("Cannot connect to the database ... \n");
     }
@@ -96,6 +96,6 @@ var handle_post = function (req, res) {
 }
 
 app.post("*", handle_post );
-app.listen(process.env.PORT || 80);
+//app.listen(process.env.PORT || 80);
 console.log('SQL Server Started!');
 //https.createServer(options, app).listen(process.env.PORT || 443);
