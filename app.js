@@ -4,7 +4,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var sh = require('shorthash');
 var mysql = require('mysql');
-var request = require('request');
 
 var app = express();
 //app.use(express.bodyParser());
@@ -23,11 +22,12 @@ var login = JSON.parse(fs.readFileSync("../sqlconfig.json"));
 var connection = mysql.createConnection(login);
 connection.connect(function(err){
     if(!err){
-        console.log("Database is connected ... \n");
+        console.log("Database is connected ... ");
         //app.listen(process.env.PORT || 80);
         https.createServer(options, app).listen(process.env.PORT || 443);
+        console.log('SQL Server Started!');
     } else {
-        console.log("Cannot connect to the database ... \n");
+        console.log("Cannot connect to the database ... ");
     }
 });
 
@@ -97,5 +97,5 @@ var handle_post = function (req, res) {
 
 app.post("*", handle_post );
 //app.listen(process.env.PORT || 80);
-console.log('SQL Server Started!');
+//console.log('SQL Server Started!');
 //https.createServer(options, app).listen(process.env.PORT || 443);
