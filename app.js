@@ -2,7 +2,6 @@ var fs = require('fs');
 var https = require('https');
 var express = require('express');
 var bodyParser = require('body-parser');
-var sh = require('shorthash');
 var mysql = require('mysql');
 
 var app = express();
@@ -14,11 +13,11 @@ var ipUrl = "http://169.254.169.254/latest/meta-data/public-ipv4";
 
 // getting the keys
 var options = {
-    key : fs.readFileSync('../keys/sqlserver.key'),
-    cert : fs.readFileSync('../keys/sqlserver.crt')
+    key : fs.readFileSync('sqlserver.key'),
+    cert : fs.readFileSync('sqlserver.crt')
 }
 
-var login = JSON.parse(fs.readFileSync("../sqlconfig.json"));
+var login = JSON.parse(fs.readFileSync("sqlconfig.json"));
 var connection = mysql.createConnection(login);
 connection.connect(function(err){
     if(!err){
