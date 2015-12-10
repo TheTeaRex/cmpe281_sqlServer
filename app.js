@@ -17,7 +17,7 @@ var options = {
     cert : fs.readFileSync('sqlserver.crt')
 }
 
-var login = JSON.parse(fs.readFileSync("sqlconfig.json"));
+var login = JSON.parse(fs.readFileSync("config.json"));
 var connection = mysql.createConnection(login);
 connection.connect(function(err){
     if(!err){
